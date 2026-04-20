@@ -2,228 +2,1743 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Outil de vérification (spec tech)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CheckPub — Vérificateur de formats publicitaires</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #0088CE;
+      --blue-dark: #006aab;
+      --blue-pale: #e6f4fb;
+      --green: #16a34a;
+      --green-pale: #dcfce7;
+      --red: #dc2626;
+      --red-pale: #fee2e2;
+      --amber: #d97706;
+      --amber-pale: #fef3c7;
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+    }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: #f1f5f9;
-      margin: 0;
-      padding: 0;
-      color: #1e293b;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
     }
+
+    /* ── HEADER ── */
     header {
+      background: #0a1628;
+      padding: 0 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #ffffff;
-      padding: 20px 40px;
-      border-bottom: 2px solid #e2e8f0;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    header img {
-      height: 40px;
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
-    h1 {
-      font-size: 1.8rem;
+    .logo-area img { height: 36px; }
+    .logo-divider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255,255,255,0.15);
+    }
+    .logo-label {
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge-version {
+      background: rgba(0,136,206,0.25);
+      color: #7dd3fc;
+      font-size: 11px;
       font-weight: 600;
-      margin: 0;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
     }
+
+    /* ── MAIN ── */
     main {
-      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 40px 60px;
     }
-    .filter {
+
+    .page-title-row {
+      margin-bottom: 28px;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .stat-card.has-data { border-left: 3px solid var(--blue); }
+    .stat-card.stat-ok.has-data { border-left-color: var(--green); }
+    .stat-card.stat-nok.has-data { border-left-color: var(--red); }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-card.stat-ok .stat-value { color: var(--green); }
+    .stat-card.stat-nok .stat-value { color: var(--red); }
+
+    /* ── CONTROLS BAR ── */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    select {
+      border: none;
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+    }
+    .filter-sep { flex: 1; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-ghost:hover { background: var(--surface-alt); border-color: var(--border-strong); color: var(--text); }
+    .btn-danger {
+      background: var(--surface);
+      color: var(--red);
+      border-color: #fecaca;
+    }
+    .btn-danger:hover { background: var(--red-pale); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── DROP ZONE ── */
     .drop-zone {
-      border: 2px dashed #0088CE;
-      padding: 40px;
+      border: 2px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      padding: 52px 40px;
       text-align: center;
-      background-color: #ffffff;
-      margin-bottom: 30px;
-      border-radius: 12px;
-      transition: background-color 0.3s ease;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
     }
-    .drop-zone.hover {
-      background-color: #e0f2ff;
+    .drop-zone:hover, .drop-zone.hover {
+      border-color: var(--blue);
+      background: var(--blue-pale);
     }
+    .drop-zone.hover .drop-icon { transform: translateY(-4px); }
+    .drop-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 16px;
+      background: var(--blue-pale);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    }
+    .drop-icon svg { width: 26px; height: 26px; stroke: var(--blue); }
+    .drop-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .drop-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+    .drop-sub span {
+      display: inline-block;
+      background: var(--blue-pale);
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin: 2px;
+      letter-spacing: 0.04em;
+    }
+    .btn-browse {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .btn-browse:hover { background: var(--blue-dark); }
+    .drop-zone > * { pointer-events: none; }
+    .drop-zone > .btn-browse { pointer-events: auto; }
+    #file-input { display: none; }
+
+    /* ── TABLE ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .table-empty {
+      padding: 60px 40px;
+      text-align: center;
+      color: var(--text-faint);
+    }
+    .table-empty-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      opacity: 0.3;
+    }
+    .table-empty p { font-size: 14px; }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      font-size: 13px;
     }
-    th, td {
-      border: 1px solid #e2e8f0;
-      padding: 12px;
-      text-align: center;
-    }
+    thead { background: #0a1628; }
     th {
-      background-color: #0088CE;
-      color: white;
+      padding: 13px 14px;
+      text-align: left;
+      font-size: 11px;
       font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      white-space: nowrap;
     }
-    .ok {
-      color: #10b981;
-      font-weight: bold;
+    th:first-child { padding-left: 20px; }
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      color: var(--text);
     }
-    .nok {
-      color: #ef4444;
-      font-weight: bold;
+    td:first-child { padding-left: 20px; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: var(--surface-alt); }
+    tbody tr.row-ok { border-left: 3px solid var(--green); }
+    tbody tr.row-nok { border-left: 3px solid var(--red); }
+    tbody tr.row-unknown { border-left: 3px solid var(--border-strong); }
+
+    .file-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      word-break: break-all;
+      max-width: 200px;
     }
-    .badge {
+    .dims {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue-dark);
+    }
+    .poids {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .fmt-pill {
       display: inline-block;
-      margin: 2px;
-      padding: 4px 8px;
-      border-radius: 20px;
-      font-size: 0.8em;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
       font-weight: 600;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 5px;
     }
-    .badge.WEB {
-      background-color: #dbeafe;
-      color: #1e40af;
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: 2px 2px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
     }
-    .badge.APP {
-      background-color: #ede9fe;
-      color: #6b21a8;
+    .badge.WEB { background: #dbeafe; color: #1e40af; }
+    .badge.APP { background: #ede9fe; color: #5b21b6; }
+
+    .status-ok {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green);
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .status-nok {
+      color: var(--red);
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .status-unknown {
+      color: var(--text-faint);
+      font-size: 12px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-ok { background: var(--green); }
+    .dot-nok { background: var(--red); }
+
+    /* ── COMPRESS BUTTON & STATES ── */
+    .btn-compress {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 13px;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      color: #92400e;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-compress:hover { background: #fef3c7; border-color: #f59e0b; }
+    .btn-compress svg { flex-shrink: 0; }
+    .compress-target {
+      display: block;
+      font-size: 11px;
+      color: var(--amber);
+      font-weight: 500;
+      margin-top: 3px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .compress-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .compress-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    .compress-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 13px;
+      background: var(--green-pale);
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      color: #14532d;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .compress-done:hover { background: #bbf7d0; }
+    .compress-error {
+      display: block;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--red);
+      font-weight: 500;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #0a1628;
+      color: #e2e8f0;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+      z-index: 500;
+      pointer-events: none;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── FIREWORKS ── */
+    #fireworksCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+      display: none;
+    }
+
+    /* ── ALERT OVERLAY ── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      10%      { transform: translateX(-10px) rotate(-1deg); }
+      20%      { transform: translateX(10px)  rotate(1deg); }
+      30%      { transform: translateX(-8px)  rotate(-0.8deg); }
+      40%      { transform: translateX(8px)   rotate(0.8deg); }
+      50%      { transform: translateX(-5px); }
+      60%      { transform: translateX(5px); }
+      70%      { transform: translateX(-3px); }
+      80%      { transform: translateX(3px); }
+    }
+    @keyframes alertBackdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes alertCardIn {
+      0%   { opacity: 0; transform: translateY(-60px) scale(0.85); }
+      65%  { transform: translateY(8px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes iconPulse {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.12); }
+    }
+    @keyframes scanLine {
+      from { top: 0; }
+      to   { top: 100%; }
+    }
+    .shake-page { animation: shake 0.55s cubic-bezier(.36,.07,.19,.97) both; }
+
+    #alert-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 4, 4, 0.82);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: alertBackdropIn 0.3s ease both;
+      display: none;
+      pointer-events: none;
+    }
+    #alert-overlay.visible { display: flex; pointer-events: all; }
+
+    .alert-card {
+      background: #0f0505;
+      border: 1.5px solid #7f1d1d;
+      border-radius: 20px;
+      padding: 48px 52px 40px;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      position: relative;
+      overflow: hidden;
+      animation: alertCardIn 0.45s cubic-bezier(.34,1.56,.64,1) both;
+      box-shadow: 0 0 0 1px rgba(239,68,68,0.15), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(239,68,68,0.1);
+    }
+    .alert-scan {
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent);
+      animation: scanLine 2s linear infinite;
+      pointer-events: none;
+    }
+    .alert-icon-wrap {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(239,68,68,0.12);
+      border: 1.5px solid rgba(239,68,68,0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: iconPulse 1.4s ease-in-out infinite;
+    }
+    .alert-icon-wrap svg {
+      width: 40px;
+      height: 40px;
+      stroke: #ef4444;
+      stroke-width: 2;
+    }
+    .alert-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(239,68,68,0.5);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .alert-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fca5a5;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .alert-count {
+      font-size: 52px;
+      font-weight: 700;
+      color: #ef4444;
+      line-height: 1;
+      margin: 12px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .alert-sub {
+      font-size: 14px;
+      color: rgba(252,165,165,0.6);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .alert-sub b { color: #fca5a5; font-weight: 600; }
+    .btn-alert-dismiss {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-alert-dismiss:hover {
+      background: rgba(239,68,68,0.28);
+      border-color: rgba(239,68,68,0.7);
+    }
+    .alert-corner {
+      position: absolute;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(239,68,68,0.2);
+      letter-spacing: 0.1em;
+    }
+    .alert-corner.tl { top: 14px; left: 18px; }
+    .alert-corner.tr { top: 14px; right: 18px; }
+    .alert-corner.bl { bottom: 14px; left: 18px; }
+    .alert-corner.br { bottom: 14px; right: 18px; }
+
+    /* ── MISMATCH OVERLAY ── */
+    @keyframes mismatchBackdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes mismatchCardIn {
+      0%   { opacity: 0; transform: translateY(-50px) scale(0.88); }
+      65%  { transform: translateY(6px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes mismatchPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(217,119,6,0.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(217,119,6,0); }
+    }
+    @keyframes mismatchScan {
+      from { top: 0; }
+      to   { top: 100%; }
+    }
+    #mismatch-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 12, 2, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: mismatchBackdropIn 0.3s ease both;
+      pointer-events: none;
+    }
+    #mismatch-overlay.visible { display: flex; pointer-events: all; }
+    .mismatch-card {
+      background: #0d0900;
+      border: 1.5px solid #92400e;
+      border-radius: 20px;
+      padding: 48px 52px 40px;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      position: relative;
+      overflow: hidden;
+      animation: mismatchCardIn 0.45s cubic-bezier(.34,1.56,.64,1) both;
+      box-shadow: 0 0 0 1px rgba(217,119,6,0.15), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(217,119,6,0.1);
+    }
+    .mismatch-scan {
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(217,119,6,0.6), transparent);
+      animation: mismatchScan 2s linear infinite;
+      pointer-events: none;
+    }
+    .mismatch-icon-wrap {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(217,119,6,0.12);
+      border: 1.5px solid rgba(217,119,6,0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: mismatchPulse 1.6s ease-in-out infinite;
+    }
+    .mismatch-icon-wrap svg {
+      width: 40px; height: 40px;
+      stroke: #f59e0b; stroke-width: 2;
+    }
+    .mismatch-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(245,158,11,0.5);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .mismatch-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fcd34d;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .mismatch-count {
+      font-size: 52px;
+      font-weight: 700;
+      color: #f59e0b;
+      line-height: 1;
+      margin: 12px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .mismatch-sub {
+      font-size: 14px;
+      color: rgba(253,230,138,0.6);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .mismatch-sub b { color: #fcd34d; font-weight: 600; }
+    .mismatch-corner {
+      position: absolute;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(245,158,11,0.2);
+      letter-spacing: 0.1em;
+    }
+    .mismatch-corner.tl { top: 14px; left: 18px; }
+    .mismatch-corner.tr { top: 14px; right: 18px; }
+    .mismatch-corner.bl { bottom: 14px; left: 18px; }
+    .mismatch-corner.br { bottom: 14px; right: 18px; }
+    .btn-mismatch-dismiss {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(217,119,6,0.15);
+      border: 1px solid rgba(217,119,6,0.4);
+      color: #fcd34d;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-mismatch-dismiss:hover {
+      background: rgba(217,119,6,0.28);
+      border-color: rgba(217,119,6,0.7);
+    }
+    .mismatch-files {
+      margin: 0 0 20px;
+      padding: 10px 14px;
+      background: rgba(217,119,6,0.08);
+      border: 1px solid rgba(217,119,6,0.2);
+      border-radius: 8px;
+      text-align: left;
+      max-height: 90px;
+      overflow-y: auto;
+    }
+    .mismatch-files li {
+      list-style: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 10.5px;
+      color: rgba(253,230,138,0.65);
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(217,119,6,0.1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mismatch-files li:last-child { border-bottom: none; }
+
+    /* ── SUCCESS OVERLAY ── */
+    @keyframes successBackdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes successCardIn {
+      0%   { opacity: 0; transform: translateY(40px) scale(0.9); }
+      70%  { transform: translateY(-6px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes checkDraw {
+      from { stroke-dashoffset: 60; }
+      to   { stroke-dashoffset: 0; }
+    }
+    @keyframes successPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
+      50%      { box-shadow: 0 0 0 14px rgba(22,163,74,0); }
+    }
+    @keyframes successScan {
+      from { top: 0; }
+      to   { top: 100%; }
+    }
+    #success-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 20, 8, 0.78);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: successBackdropIn 0.3s ease both;
+      pointer-events: none;
+    }
+    #success-overlay.visible { display: flex; pointer-events: all; }
+    .success-card {
+      background: #030f06;
+      border: 1.5px solid #14532d;
+      border-radius: 20px;
+      padding: 48px 52px 40px;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      position: relative;
+      overflow: hidden;
+      animation: successCardIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+      box-shadow: 0 0 0 1px rgba(22,163,74,0.15), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(22,163,74,0.1);
+    }
+    .success-scan {
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(22,163,74,0.5), transparent);
+      animation: successScan 2.2s linear infinite;
+      pointer-events: none;
+    }
+    .success-icon-wrap {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(22,163,74,0.12);
+      border: 1.5px solid rgba(22,163,74,0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: successPulse 1.8s ease-in-out infinite;
+    }
+    .success-icon-wrap svg {
+      width: 40px;
+      height: 40px;
+      stroke: #4ade80;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: checkDraw 0.5s cubic-bezier(.4,0,.2,1) 0.2s forwards;
+    }
+    .success-code {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(74,222,128,0.45);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .success-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #86efac;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .success-count {
+      font-size: 52px;
+      font-weight: 700;
+      color: #4ade80;
+      line-height: 1;
+      margin: 12px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .success-sub {
+      font-size: 14px;
+      color: rgba(134,239,172,0.55);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .success-sub b { color: #86efac; font-weight: 600; }
+    .success-corner {
+      position: absolute;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(74,222,128,0.2);
+      letter-spacing: 0.1em;
+    }
+    .success-corner.tl { top: 14px; left: 18px; }
+    .success-corner.tr { top: 14px; right: 18px; }
+    .success-corner.bl { bottom: 14px; left: 18px; }
+    .success-corner.br { bottom: 14px; right: 18px; }
+    .btn-success-dismiss {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(22,163,74,0.15);
+      border: 1px solid rgba(22,163,74,0.4);
+      color: #86efac;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-success-dismiss:hover {
+      background: rgba(22,163,74,0.28);
+      border-color: rgba(22,163,74,0.7);
+    }
+
+    /* ── NOMENCLATURE MISMATCH BADGE ── */
+    .badge-mismatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 7px;
+      padding: 5px 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 7px;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .badge-mismatch svg { flex-shrink: 0; }
+    .badge-mismatch-details {
+      display: block;
+      font-weight: 400;
+      color: #b45309;
+      font-size: 10.5px;
+      margin-top: 1px;
+    }
+
+    /* ── ROW ENTER ANIMATION ── */
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    tbody tr { animation: rowIn 0.2s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      main { padding: 24px 20px 40px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      header { padding: 0 20px; }
+    }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .controls-bar { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Outil de vérification (spec tech)</h1>
-    
-  </header>
-  <main>
-    <div class="filter">
-      <label for="deviceFilter">Filtrer par device : </label>
+
+<header>
+  <div class="logo-area">
+    <img src="https://i.imgur.com/zFkqKxu.png" alt="CheckPub">
+    <div class="logo-divider"></div>
+    <span class="logo-label">Vérificateur de formats pub</span>
+  </div>
+  <div class="header-right">
+    <span class="badge-version">Spec v2025</span>
+  </div>
+</header>
+
+<main>
+  <div class="page-title-row">
+    <h1 class="page-title">Analyse de conformité</h1>
+    <p class="page-subtitle">Vérifiez vos visuels publicitaires selon les specs techniques en vigueur.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card" id="card-total">
+      <span class="stat-label">Fichiers analysés</span>
+      <span class="stat-value" id="stat-total">—</span>
+    </div>
+    <div class="stat-card stat-ok" id="card-ok">
+      <span class="stat-label">Conformes</span>
+      <span class="stat-value" id="stat-ok">—</span>
+    </div>
+    <div class="stat-card stat-nok" id="card-nok">
+      <span class="stat-label">Non conformes</span>
+      <span class="stat-value" id="stat-nok">—</span>
+    </div>
+    <div class="stat-card" id="card-rate">
+      <span class="stat-label">Taux de conformité</span>
+      <span class="stat-value" id="stat-rate">—</span>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-bar">
+    <div class="filter-group">
+      <span class="filter-label">Device</span>
       <select id="deviceFilter">
         <option value="ALL">Tous</option>
-        <option value="APP">APP</option>
-        <option value="WEB">WEB</option>
+        <option value="APP">APP uniquement</option>
+        <option value="WEB">WEB uniquement</option>
       </select>
     </div>
-    <div class="drop-zone" id="drop-zone">Glissez vos images ici</div>
-    <table>
+    <div class="filter-group">
+      <span class="filter-label">Statut</span>
+      <select id="statusFilter">
+        <option value="ALL">Tous</option>
+        <option value="OK">Conformes</option>
+        <option value="NOK">Non conformes</option>
+      </select>
+    </div>
+    <div class="filter-sep"></div>
+    <button class="btn btn-ghost" id="btn-export" disabled onclick="exportCSV()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+      Exporter CSV
+    </button>
+    <button class="btn btn-danger" id="btn-reset" disabled onclick="resetAll()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-icon">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1M16 10l-4-4-4 4M12 6v10"/>
+      </svg>
+    </div>
+    <p class="drop-title">Glissez vos visuels ici</p>
+    <p class="drop-sub">
+      Formats acceptés :
+      <span>JPG</span><span>PNG</span><span>GIF</span><span>HTML</span>
+    </p>
+    <button class="btn-browse" id="btn-browse">Parcourir les fichiers</button>
+    <input type="file" id="file-input" multiple accept="image/*,.html,.gif">
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrapper">
+    <div class="table-empty" id="empty-state">
+      <svg class="table-empty-icon" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 48 48">
+        <rect x="8" y="6" width="32" height="36" rx="4" stroke-width="1.5"/>
+        <path d="M16 16h16M16 22h16M16 28h8"/>
+      </svg>
+      <p>Aucun fichier analysé pour l'instant.</p>
+      <p style="font-size:12px;color:var(--text-faint);margin-top:4px;">Déposez des images pour démarrer l'analyse.</p>
+    </div>
+    <table id="result-table" style="display:none;">
       <thead>
         <tr>
-          <th>Nom</th>
+          <th>Fichier</th>
           <th>Dimensions</th>
-          <th>Poids (Ko)</th>
+          <th>Poids</th>
           <th>Format</th>
-          <th>Correspondance</th>
+          <th>Correspondances</th>
           <th>Statut</th>
         </tr>
       </thead>
       <tbody id="result-body"></tbody>
     </table>
-  </main>
-  <script>
-    const specFormats = [
-      { tailles: ["320x100"], nom: "Megaban", context: "APP", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["320x100"], nom: "Megaban", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["320x100"], nom: "GrandAngle (responsive)", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["320x100"], nom: "Masthead (responsive)", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["300x250"], nom: "Pavé", context: "APP", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["300x250"], nom: "Pavé", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["320x50"], nom: "Sticky", context: "APP", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["680x1024"], nom: "Interstitiel Non cliquable", context: "APP", formats: ["jpg", "png"], poidsMax: 200 },
-      { tailles: ["656x280"], nom: "Native 1 ou 2 CC / BP1", context: "APP", formats: ["jpg", "png"], poidsMax: 55 },
-      { tailles: ["300x300"], nom: "BP 2/3/4", context: "APP", formats: ["jpg", "png"], poidsMax: 55 },
-      { tailles: ["728x90"], nom: "Megaban", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["970x250"], nom: "Masthead", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["300x600"], nom: "GrandAngle", context: "WEB", formats: ["jpg", "png", "gif", "html"], poidsMax: 55 },
-      { tailles: ["1024x580"], nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg", "png"], poidsMax: 200 },
-      { tailles: ["320x480"], nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg", "png"], poidsMax: 200 },
-      { tailles: ["300x300"], nom: "BP 2/3/4", context: "WEB", formats: ["jpg", "png"], poidsMax: 55 }
-    ];
+  </div>
+</main>
 
-    const dropZone = document.getElementById('drop-zone');
-    const resultBody = document.getElementById('result-body');
-    const deviceFilter = document.getElementById('deviceFilter');
+<div id="toast"></div>
+<canvas id="fireworksCanvas" style="z-index:1001;"></canvas>
 
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('hover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+<div id="alert-overlay">
+  <div class="alert-card">
+    <div class="alert-scan"></div>
+    <span class="alert-corner tl">ERR_CONFORMITY</span>
+    <span class="alert-corner tr" id="alert-ts"></span>
+    <span class="alert-corner bl">CHECKPUB v2025</span>
+    <span class="alert-corner br">NON_CONFORME</span>
+    <div class="alert-icon-wrap">
+      <svg fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      </svg>
+    </div>
+    <p class="alert-code">Rapport d'analyse · CheckPub</p>
+    <h2 class="alert-title">Créations non conformes</h2>
+    <div class="alert-count" id="alert-nok-count">0</div>
+    <p class="alert-sub" id="alert-detail">fichier(s) nécessite(nt) des corrections avant diffusion.</p>
+    <button class="btn-alert-dismiss" onclick="dismissAlert()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      Voir le détail
+    </button>
+  </div>
+</div>
 
-    let currentFilter = 'ALL';
-    deviceFilter.addEventListener('change', () => {
-      currentFilter = deviceFilter.value;
-      updateVisibility();
-    });
+<div id="success-overlay">
+  <div class="success-card">
+    <div class="success-scan"></div>
+    <span class="success-corner tl">ALL_CLEAR</span>
+    <span class="success-corner tr" id="success-ts"></span>
+    <span class="success-corner bl">CHECKPUB v2025</span>
+    <span class="success-corner br">CONFORME</span>
+    <div class="success-icon-wrap">
+      <svg fill="none" viewBox="0 0 24 24">
+        <path d="M4.5 12.75l6 6 9-13.5"/>
+      </svg>
+    </div>
+    <p class="success-code">Rapport d'analyse · CheckPub</p>
+    <h2 class="success-title">Toutes les créations sont conformes</h2>
+    <div class="success-count" id="success-ok-count">0</div>
+    <p class="success-sub" id="success-detail">fichier(s) validé(s) et prêt(s) pour diffusion.</p>
+    <button class="btn-success-dismiss" onclick="dismissSuccess()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+      Voir le récapitulatif
+    </button>
+  </div>
+</div>
 
-    function updateVisibility() {
-      document.querySelectorAll('#result-body tr').forEach(row => {
-        const ctx = row.getAttribute('data-context');
-        row.style.display = (currentFilter === 'ALL' || ctx.includes(currentFilter)) ? '' : 'none';
-      });
+<div id="mismatch-overlay">
+  <div class="mismatch-card">
+    <div class="mismatch-scan"></div>
+    <span class="mismatch-corner tl">WARN_NOMENCLATURE</span>
+    <span class="mismatch-corner tr" id="mismatch-ts"></span>
+    <span class="mismatch-corner bl">CHECKPUB v2025</span>
+    <span class="mismatch-corner br">MISMATCH</span>
+    <div class="mismatch-icon-wrap">
+      <svg fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      </svg>
+    </div>
+    <p class="mismatch-code">Rapport nomenclature · CheckPub</p>
+    <h2 class="mismatch-title">Nomenclature trompeuse</h2>
+    <div class="mismatch-count" id="mismatch-count">0</div>
+    <p class="mismatch-sub" id="mismatch-detail">fichier(s) dont le nom annonce une taille différente de la réalité.</p>
+    <ul class="mismatch-files" id="mismatch-files-list"></ul>
+    <button class="btn-mismatch-dismiss" onclick="dismissMismatch()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      Voir le détail
+    </button>
+  </div>
+</div>
+
+
+<script>
+const specFormats = [
+  { tailles: ["320x100"], nom: "Megaban", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["320x100"], nom: "Megaban", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["320x50"],  nom: "Sticky",  context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["320x100"], nom: "GrandAngle (responsive)", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["320x100"], nom: "Masthead (responsive)",   context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["300x250"], nom: "Pavé", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["300x250"], nom: "Pavé", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["680x1024"],nom: "Interstitiel Non cliquable", context: "APP", formats: ["jpg","png","gif"], poidsMax: 200 },
+  { tailles: ["656x280"], nom: "Native 1 ou 2 CC / BP1",    context: "APP", formats: ["jpg","png","gif"], poidsMax: 55 },
+  { tailles: ["300x300"], nom: "BP 2/3/4", context: "APP", formats: ["jpg","png"], poidsMax: 55 },
+  { tailles: ["728x90"],  nom: "Megaban",  context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["970x250"], nom: "Masthead", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["300x600"], nom: "GrandAngle", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
+  { tailles: ["1024x580"],nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 200 },
+  { tailles: ["320x480"], nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 200 },
+  { tailles: ["300x300"], nom: "BP 2/3/4", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 55 },
+  { tailles: ["1245x700"],nom: "UNE",      context: "WEB", formats: ["jpg","png","gif"], poidsMax: 300 },
+];
+
+let allRows = [];
+let stats = { total: 0, ok: 0, nok: 0, mismatch: 0 };
+let mismatchFiles = [];
+let pendingCount = 0;
+let batchSize = 0;
+let rowIdCounter = 0;
+const fileStore = {};
+
+const dropZone    = document.getElementById('drop-zone');
+const fileInput   = document.getElementById('file-input');
+const resultBody  = document.getElementById('result-body');
+const resultTable = document.getElementById('result-table');
+const emptyState  = document.getElementById('empty-state');
+const deviceFilter= document.getElementById('deviceFilter');
+const statusFilter= document.getElementById('statusFilter');
+
+// Drag & drop
+// dragover bulle depuis les enfants → toujours déclenché tant qu'on est dans la zone
+// dragleave + relatedTarget → détecte le vrai départ de la zone
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop',     e => e.preventDefault());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  dropZone.classList.add('hover');
+});
+
+dropZone.addEventListener('dragleave', e => {
+  if (!dropZone.contains(e.relatedTarget)) {
+    dropZone.classList.remove('hover');
+  }
+});
+
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('hover');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+
+// Click to browse — button only, never from drop
+document.getElementById('btn-browse').addEventListener('click', e => {
+  e.stopPropagation();
+  fileInput.click();
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) handleFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+deviceFilter.addEventListener('change', updateVisibility);
+statusFilter.addEventListener('change', updateVisibility);
+
+function handleFiles(files) {
+  const arr = Array.from(files);
+  if (!arr.length) return;
+  pendingCount += arr.length;
+  batchSize += arr.length;
+
+  arr.forEach(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (ext === 'html') {
+      processResult(file, null, null, ext);
+    } else {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => processResult(file, img.width, img.height, ext);
+        img.onerror = () => processResult(file, null, null, ext);
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
     }
+  });
+}
 
-    dropZone.addEventListener('drop', async e => {
-      e.preventDefault();
-      dropZone.classList.remove('hover');
+function processResult(file, width, height, ext) {
+  const sizeKo = +(file.size / 1024).toFixed(1);
+  const key = (width && height) ? `${width}x${height}` : null;
+  const matches = key ? specFormats.filter(f => f.tailles.includes(key)) : [];
 
-      const files = Array.from(e.dataTransfer.files);
+  // ── Détection mismatch nomenclature ──
+  // Extrait toutes les dimensions connues du spec (dédupliquées)
+  const knownSizes = [...new Set(specFormats.flatMap(f => f.tailles))];
+  let mismatchHtml = '';
+  if (width && height) {
+    for (const size of knownSizes) {
+      const [sw, sh] = size.split('x').map(Number);
+      const pattern = new RegExp('(?:^|[_\\-\\s\\.])' + sw + '[xX]' + sh + '(?:[_\\-\\s\\.]|$)');
+      if (pattern.test(file.name)) {
+        if (sw !== width || sh !== height) {
+          stats.mismatch++;
+          mismatchFiles.push({ name: file.name, announced: `${sw}×${sh}`, real: `${width}×${height}` });
+          mismatchHtml = `
+            <div class="badge-mismatch">
+              <svg width="13" height="13" fill="none" stroke="#d97706" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              </svg>
+              <span>
+                Nomenclature trompeuse
+                <span class="badge-mismatch-details">Nom annonce ${sw}\u00d7${sh} \u00b7 R\u00e9el\u00a0: ${width}\u00d7${height}</span>
+              </span>
+            </div>`;
+        }
+        break;
+      }
+    }
+  }
 
-      for (const file of files) {
-        const fileReader = new FileReader();
-        fileReader.onload = event => {
-          const img = new Image();
-          img.onload = () => {
-            const width = img.width;
-            const height = img.height;
-            const sizeKo = +(file.size / 1024).toFixed(1);
-            const ext = file.name.split('.').pop().toLowerCase();
-            const key = `${width}x${height}`;
+  const rowId = 'row-' + (++rowIdCounter);
+  let rowClass = 'row-unknown';
+  let statusHtml = '';
+  let contextStr = 'none';
+  let correspondances = '';
+  let conformeFlag = false;
 
-            const matches = specFormats.filter(f => f.tailles.includes(key));
+  if (!key && ext !== 'html') {
+    statusHtml = `<span class="status-unknown">Format non analysable</span>`;
+  } else if (key && matches.length === 0) {
+    statusHtml = `<div class="status-nok"><span class="status-dot dot-nok"></span>Taille non reconnue</div>`;
+    rowClass = 'row-nok';
+    stats.nok++;
+  } else {
+    let hasOk = false;
+    let errors = [];
+    let weightOnlyErrors = [];  // matches where only weight fails
+    let minPoidsMax = Infinity;
 
-            if (matches.length === 0) {
-              const row = `<tr data-context="none">
-                <td>${file.name}</td><td>${width}x${height}</td><td>${sizeKo}</td><td>${ext}</td>
-                <td>-</td><td><span class="nok">Non conforme : taille non reconnue</span></td>
-              </tr>`;
-              resultBody.insertAdjacentHTML('beforeend', row);
-              return;
-            }
+    contextStr = matches.map(m => m.context).join(',');
+    correspondances = matches.map(m => `<span class="badge ${m.context}">${m.nom} · ${m.context}</span>`).join('');
 
-            let anyConforme = false;
-            let correspondances = [];
-            let errorDetails = [];
-
-            matches.forEach(match => {
-              const badge = `<span class="badge ${match.context}">${match.nom} (${key}) - ${match.context}</span>`;
-              correspondances.push(badge);
-              const formatOk = match.formats.includes(ext);
-              const poidsOk = sizeKo <= match.poidsMax;
-
-              if (formatOk && poidsOk) {
-                anyConforme = true;
-              } else {
-                let d = [];
-                if (!formatOk) d.push(`format non autorisé (${ext})`);
-                if (!poidsOk) d.push(`dépasse ${Math.round(sizeKo - match.poidsMax)} Ko`);
-                errorDetails.push(`${match.nom} - ${match.context} : ${d.join(', ')}`);
-              }
-            });
-
-            const status = anyConforme
-              ? '<span class="ok">Conforme</span>'
-              : `<span class="nok">Non conforme : ${errorDetails.join(' | ')}</span>`;
-
-            const row = `<tr data-context="${matches.map(m => m.context).join(',')}">
-              <td>${file.name}</td><td>${width}x${height}</td><td>${sizeKo}</td><td>${ext}</td>
-              <td>${correspondances.join(' ')}</td><td>${status}</td>
-            </tr>`;
-            resultBody.insertAdjacentHTML('beforeend', row);
-            updateVisibility();
-          };
-          img.src = event.target.result;
-        };
-        fileReader.readAsDataURL(file);
+    matches.forEach(match => {
+      const formatOk = match.formats.includes(ext);
+      const poidsOk = sizeKo <= match.poidsMax;
+      if (formatOk && poidsOk) {
+        hasOk = true;
+      } else {
+        let d = [];
+        if (!formatOk) d.push(`format non autorisé`);
+        if (!poidsOk)  d.push(`+${Math.round(sizeKo - match.poidsMax)} Ko vs limite ${match.poidsMax} Ko`);
+        errors.push(`<b>${match.nom} ${match.context}</b> : ${d.join(', ')}`);
+        // Track weight-only failures for compressible formats
+        if (formatOk && !poidsOk) {
+          weightOnlyErrors.push(match);
+          if (match.poidsMax < minPoidsMax) minPoidsMax = match.poidsMax;
+        }
       }
     });
-  </script>
+
+    const canCompress = !hasOk
+      && weightOnlyErrors.length > 0
+      && weightOnlyErrors.length === matches.length  // ALL failures are weight-only
+      && ['jpg','jpeg','png'].includes(ext);
+
+    if (hasOk) {
+      rowClass = 'row-ok';
+      conformeFlag = true;
+      statusHtml = `<span class="status-ok"><span class="status-dot dot-ok"></span>Conforme</span>` + mismatchHtml;
+      stats.ok++;
+    } else {
+      rowClass = 'row-nok';
+      const errBlock = `<div class="status-nok"><span class="status-dot dot-nok" style="display:inline-block;margin-right:4px;"></span>${errors.join('<br>')}</div>`;
+      const compressBlock = canCompress
+        ? `<button class="btn-compress" id="btn-${rowId}" onclick="compressFile('${rowId}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2v10m0 0l-3-3m3 3l3-3M3 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+            Compresser à ${minPoidsMax} Ko
+           </button>
+           <span class="compress-target">Cible : ≤ ${minPoidsMax} Ko · Actuellement : ${sizeKo} Ko</span>`
+        : '';
+      statusHtml = errBlock + compressBlock + mismatchHtml;
+      stats.nok++;
+
+      if (canCompress) {
+        fileStore[rowId] = { file, ext, targetKo: minPoidsMax, width, height };
+      }
+    }
+  }
+
+  stats.total++;
+  updateStats();
+
+  const dimDisplay = (width && height) ? `<span class="dims">${width}×${height}</span>` : '<span style="color:var(--text-faint)">—</span>';
+
+  const rowData = {
+    html: `<tr id="${rowId}" class="${rowClass}" data-context="${contextStr}" data-status="${conformeFlag ? 'OK' : 'NOK'}">
+      <td><span class="file-name">${escHtml(file.name)}</span></td>
+      <td>${dimDisplay}</td>
+      <td><span class="poids" id="poids-${rowId}">${sizeKo} Ko</span></td>
+      <td><span class="fmt-pill">${ext}</span></td>
+      <td style="max-width:260px;">${correspondances || '<span style="color:var(--text-faint)">—</span>'}</td>
+      <td id="status-${rowId}">${statusHtml}</td>
+    </tr>`,
+    conform: conformeFlag,
+    name: file.name
+  };
+  allRows.push(rowData);
+  renderTable();
+  updateVisibility();
+
+  pendingCount--;
+  if (pendingCount === 0 && stats.total > 0) {
+    setTimeout(() => {
+      if (stats.nok > 0) launchAlert();
+      else if (stats.mismatch > 0) launchMismatch();
+      else launchFireworks();
+    }, 350);
+  }
+
+  document.getElementById('btn-export').disabled = false;
+  document.getElementById('btn-reset').disabled = false;
+  showToast(`${file.name} analysé`);
+}
+
+function renderTable() {
+  resultBody.innerHTML = allRows.map(r => r.html).join('');
+  emptyState.style.display = 'none';
+  resultTable.style.display = 'table';
+}
+
+function updateVisibility() {
+  const dev = deviceFilter.value;
+  const sts = statusFilter.value;
+  document.querySelectorAll('#result-body tr').forEach(row => {
+    const ctx = row.getAttribute('data-context') || '';
+    const st  = row.getAttribute('data-status') || '';
+    const devOk = (dev === 'ALL') || ctx.includes(dev);
+    const stsOk = (sts === 'ALL') || st === sts;
+    row.style.display = (devOk && stsOk) ? '' : 'none';
+  });
+}
+
+function updateStats() {
+  const el = (id, val) => document.getElementById(id).textContent = val;
+  const rate = stats.total ? Math.round((stats.ok / stats.total) * 100) : 0;
+  el('stat-total', stats.total);
+  el('stat-ok', stats.ok);
+  el('stat-nok', stats.nok);
+  el('stat-rate', stats.total ? `${rate} %` : '—');
+  ['card-total','card-ok','card-nok','card-rate'].forEach(id => {
+    document.getElementById(id).classList.toggle('has-data', stats.total > 0);
+  });
+}
+
+function resetAll() {
+  allRows = [];
+  stats = { total: 0, ok: 0, nok: 0, mismatch: 0 };
+  mismatchFiles = [];
+  pendingCount = 0;
+  batchSize = 0;
+  resultBody.innerHTML = '';
+  resultTable.style.display = 'none';
+  emptyState.style.display = '';
+  updateStats();
+  document.getElementById('btn-export').disabled = true;
+  document.getElementById('btn-reset').disabled = true;
+}
+
+function exportCSV() {
+  const headers = ['Fichier','Statut'];
+  const lines = allRows.map(r => {
+    const div = document.createElement('div');
+    div.innerHTML = r.html;
+    const cells = div.querySelectorAll('td');
+    return [cells[0]?.textContent?.trim(), r.conform ? 'Conforme' : 'Non conforme'].map(v => `"${v}"`).join(',');
+  });
+  const csv = [headers.join(','), ...lines].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = `checkpub-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function compressFile(rowId) {
+  const entry = fileStore[rowId];
+  if (!entry) return;
+
+  const { file, ext, targetKo, width, height } = entry;
+  const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+  const statusCell = document.getElementById('status-' + rowId);
+  const poidsCell  = document.getElementById('poids-' + rowId);
+
+  statusCell.innerHTML = `<div class="compress-loading"><div class="compress-spinner"></div>Compression en cours…</div>`;
+
+  try {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = dataUrl;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = width  || img.naturalWidth;
+    canvas.height = height || img.naturalHeight;
+    const ctx2d = canvas.getContext('2d');
+    ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const targetBytes = targetKo * 1024;
+    let lo = 0.01, hi = 0.99, bestBlob = null, bestQ = hi;
+
+    // Binary search: find highest quality that stays under targetBytes
+    for (let iter = 0; iter < 14; iter++) {
+      const mid = (lo + hi) / 2;
+      const blob = await new Promise(res => canvas.toBlob(res, mimeType, mid));
+      if (!blob) break;
+      if (blob.size <= targetBytes) {
+        bestBlob = blob;
+        bestQ = mid;
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+
+    if (!bestBlob) {
+      if (mimeType === 'image/png') {
+        statusCell.innerHTML = `
+          <div class="status-nok"><span class="status-dot dot-nok" style="display:inline-block;margin-right:4px;"></span>PNG lossless : la qualité n'a pas d'effet.</div>
+          <button class="btn-compress" id="btn-${rowId}" onclick="convertToJpg('${rowId}')" style="background:#eff6ff;border-color:#93c5fd;color:#1e3a8a;margin-top:8px;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 4h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4zM8 20h8M12 16v4"/></svg>
+            Convertir en JPG (≤ ${targetKo} Ko)
+          </button>
+          <span class="compress-target" style="color:#3b82f6;">Dimensions préservées · Format JPG</span>`;
+      } else {
+        statusCell.innerHTML = `<div class="status-nok"><span class="status-dot dot-nok" style="display:inline-block;margin-right:4px;"></span>Poids trop important (${(file.size/1024).toFixed(1)} Ko → cible ${targetKo} Ko).</div><span class="compress-error">Impossible d'atteindre ${targetKo} Ko sans dégradation excessive. Retravaillez la source.</span>`;
+      }
+      return;
+    }
+
+    const achievedKo = +(bestBlob.size / 1024).toFixed(1);
+    const outName = file.name.replace(/\.[^.]+$/, '') + '_compressed.' + ext;
+    const url = URL.createObjectURL(bestBlob);
+
+    poidsCell.innerHTML = `<span class="poids" style="color:var(--green)">${achievedKo} Ko</span>`;
+    statusCell.innerHTML = `
+      <span class="status-ok" style="display:flex;align-items:center;gap:6px;">
+        <span class="status-dot dot-ok"></span>Conforme après compression
+      </span>
+      <a href="${url}" download="${outName}" class="compress-done" style="margin-top:8px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+        Télécharger (${achievedKo} Ko)
+      </a>`;
+
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.classList.remove('row-nok');
+      row.classList.add('row-ok');
+      row.setAttribute('data-status', 'OK');
+    }
+    stats.nok = Math.max(0, stats.nok - 1);
+    stats.ok++;
+    updateStats();
+    showToast(`${file.name} compressé : ${achievedKo} Ko`);
+
+  } catch (err) {
+    statusCell.innerHTML = `<span class="compress-error">Erreur lors de la compression : ${err.message}</span>`;
+  }
+}
+
+async function convertToJpg(rowId) {
+  const entry = fileStore[rowId];
+  if (!entry) return;
+
+  const { file, targetKo, width, height } = entry;
+  const statusCell = document.getElementById('status-' + rowId);
+  const poidsCell  = document.getElementById('poids-' + rowId);
+
+  statusCell.innerHTML = `<div class="compress-loading"><div class="compress-spinner"></div>Conversion JPG en cours…</div>`;
+
+  try {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = dataUrl;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = width  || img.naturalWidth;
+    canvas.height = height || img.naturalHeight;
+    const ctx2d = canvas.getContext('2d');
+    ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const targetBytes = targetKo * 1024;
+    let lo = 0.01, hi = 0.99, bestBlob = null;
+
+    for (let iter = 0; iter < 14; iter++) {
+      const mid = (lo + hi) / 2;
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', mid));
+      if (!blob) break;
+      if (blob.size <= targetBytes) { bestBlob = blob; lo = mid; }
+      else { hi = mid; }
+    }
+
+    if (!bestBlob) {
+      statusCell.innerHTML = `<div class="status-nok"><span class="status-dot dot-nok" style="display:inline-block;margin-right:4px;"></span>Impossible d'atteindre ${targetKo} Ko en JPG sans dégradation excessive.</div><span class="compress-error">Retravaillez la source.</span>`;
+      return;
+    }
+
+    const achievedKo = +(bestBlob.size / 1024).toFixed(1);
+    const outName = file.name.replace(/\.png$/i, '') + '_converti.jpg';
+    const url = URL.createObjectURL(bestBlob);
+
+    poidsCell.innerHTML = `<span class="poids" style="color:var(--green)">${achievedKo} Ko</span>`;
+    statusCell.innerHTML = `
+      <span class="status-ok" style="display:flex;align-items:center;gap:6px;">
+        <span class="status-dot dot-ok"></span>Conforme après conversion JPG
+      </span>
+      <a href="${url}" download="${outName}" class="compress-done" style="margin-top:8px;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+        Télécharger en JPG (${achievedKo} Ko)
+      </a>`;
+
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.classList.remove('row-nok');
+      row.classList.add('row-ok');
+      row.setAttribute('data-status', 'OK');
+    }
+    stats.nok = Math.max(0, stats.nok - 1);
+    stats.ok++;
+    updateStats();
+    showToast(`${file.name} converti en JPG : ${achievedKo} Ko`);
+
+  } catch (err) {
+    statusCell.innerHTML = `<span class="compress-error">Erreur : ${err.message}</span>`;
+  }
+}
+
+function launchMismatch() {
+  document.getElementById('mismatch-count').textContent = stats.mismatch;
+  document.getElementById('mismatch-ts').textContent = new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('mismatch-detail').innerHTML =
+    `<b>${stats.mismatch} fichier${stats.mismatch > 1 ? 's' : ''}</b> dont le nom annonce une taille différente de la réalité.`;
+  const list = document.getElementById('mismatch-files-list');
+  list.innerHTML = mismatchFiles.map(f =>
+    `<li title="${escHtml(f.name)}">⚠ ${escHtml(f.name)} — annoncé ${f.announced}, réel ${f.real}</li>`
+  ).join('');
+  document.getElementById('mismatch-overlay').classList.add('visible');
+}
+
+function dismissMismatch() {
+  document.getElementById('mismatch-overlay').classList.remove('visible');
+}
+
+function launchAlert() {
+  const overlay = document.getElementById('alert-overlay');
+  document.getElementById('alert-nok-count').textContent = stats.nok;
+  document.getElementById('alert-ts').textContent = new Date().toLocaleTimeString('fr-FR');
+  const total = stats.total;
+  document.getElementById('alert-detail').innerHTML =
+    `<b>${stats.nok} fichier${stats.nok > 1 ? 's' : ''}</b> sur ${total} nécessite${stats.nok > 1 ? 'nt' : ''} des corrections avant diffusion.`;
+  overlay.classList.add('visible');
+  document.body.classList.add('shake-page');
+  setTimeout(() => document.body.classList.remove('shake-page'), 600);
+  statusFilter.value = 'NOK';
+  updateVisibility();
+}
+
+function dismissAlert() {
+  document.getElementById('alert-overlay').classList.remove('visible');
+}
+
+function dismissSuccess() {
+  document.getElementById('success-overlay').classList.remove('visible');
+}
+
+function launchFireworks() {
+  // Show success overlay
+  document.getElementById('success-ok-count').textContent = stats.ok;
+  document.getElementById('success-ts').textContent = new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('success-detail').innerHTML =
+    `<b>${stats.ok} fichier${stats.ok > 1 ? 's' : ''}</b> validé${stats.ok > 1 ? 's' : ''} et prêt${stats.ok > 1 ? 's' : ''} pour diffusion.`;
+  document.getElementById('success-overlay').classList.add('visible');
+
+  const canvas = document.getElementById('fireworksCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  const colors = ['#0088CE','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'];
+  const particles = [];
+
+  function burst(cx, cy) {
+    for (let i = 0; i < 60; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.random() * 7 + 2;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: Math.random() * 3 + 1,
+        alpha: 1,
+        decay: Math.random() * 0.015 + 0.008,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+  }
+
+  burst(canvas.width * 0.3, canvas.height * 0.35);
+  setTimeout(() => burst(canvas.width * 0.7, canvas.height * 0.3), 180);
+  setTimeout(() => burst(canvas.width * 0.5, canvas.height * 0.45), 360);
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.x  += p.vx;
+      p.y  += p.vy + 0.08;
+      p.vy += 0.12;
+      p.alpha -= p.decay;
+      if (p.alpha <= 0) return;
+      alive = true;
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (alive) requestAnimationFrame(animate);
+    else canvas.style.display = 'none';
+  }
+  animate();
+}
+</script>
 </body>
 </html>
