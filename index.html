@@ -469,6 +469,46 @@
       font-weight: 500;
     }
 
+    /* ── PREVIEW INLINE POST-COMPRESSION ── */
+    .compress-preview-wrap {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface-alt);
+    }
+    .compress-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      background: var(--green-pale);
+      border-bottom: 1px solid #86efac;
+    }
+    .compress-preview-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .compress-preview-hint {
+      font-size: 10px;
+      color: #16a34a;
+      opacity: 0.7;
+    }
+    .compress-preview-img {
+      display: block;
+      max-width: 100%;
+      max-height: 120px;
+      width: auto;
+      height: auto;
+      margin: 8px auto;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
     /* ── TOAST ── */
     #toast {
       position: fixed;
@@ -1556,10 +1596,16 @@ async function compressFile(rowId) {
       <span class="status-ok" style="display:flex;align-items:center;gap:6px;">
         <span class="status-dot dot-ok"></span>Conforme après compression
       </span>
-      <a href="${url}" download="${outName}" class="compress-done" style="margin-top:8px;">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
-        Télécharger (${achievedKo} Ko)
-      </a>`;
+      <div class="compress-preview-wrap">
+        <div class="compress-preview-header">
+          <span class="compress-preview-label">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            ${achievedKo} Ko · Prêt
+          </span>
+          <span class="compress-preview-hint">Clic droit → Enregistrer l'image</span>
+        </div>
+        <img class="compress-preview-img" src="${url}" alt="${escHtml(outName)}" title="Clic droit → Enregistrer l'image sous…">
+      </div>`;
 
     const row = document.getElementById(rowId);
     if (row) {
@@ -1633,10 +1679,16 @@ async function convertToJpg(rowId) {
       <span class="status-ok" style="display:flex;align-items:center;gap:6px;">
         <span class="status-dot dot-ok"></span>Conforme après conversion JPG
       </span>
-      <a href="${url}" download="${outName}" class="compress-done" style="margin-top:8px;">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
-        Télécharger en JPG (${achievedKo} Ko)
-      </a>`;
+      <div class="compress-preview-wrap">
+        <div class="compress-preview-header">
+          <span class="compress-preview-label">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            ${achievedKo} Ko · JPG
+          </span>
+          <span class="compress-preview-hint">Clic droit → Enregistrer l'image</span>
+        </div>
+        <img class="compress-preview-img" src="${url}" alt="${escHtml(outName)}" title="Clic droit → Enregistrer l'image sous…">
+      </div>`;
 
     const row = document.getElementById(rowId);
     if (row) {
