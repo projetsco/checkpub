@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>CheckPub — Vérificateur de formats publicitaires</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -109,7 +110,7 @@
     /* ── STAT CARDS ── */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-bottom: 24px;
     }
@@ -127,7 +128,8 @@
     .stat-card.has-data { border-left: 3px solid var(--blue); }
     .stat-card.stat-ok.has-data { border-left-color: var(--green); }
     .stat-card.stat-nok.has-data { border-left-color: var(--red); }
-    .stat-label {
+    .stat-card.stat-mismatch.has-data { border-left-color: var(--amber); }
+    .stat-card.stat-mismatch .stat-value { color: var(--amber); }
       font-size: 12px;
       font-weight: 500;
       color: var(--text-muted);
@@ -1012,7 +1014,7 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       main { padding: 24px 20px 40px; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
       header { padding: 0 20px; }
     }
     @media (max-width: 600px) {
@@ -1030,7 +1032,7 @@
     <span class="logo-label">Vérificateur de formats pub</span>
   </div>
   <div class="header-right">
-    <span class="badge-version">Spec v2025</span>
+    <span class="badge-version">Spec v2026, MAJ 21/04/26</span>
   </div>
 </header>
 
@@ -1057,6 +1059,10 @@
     <div class="stat-card" id="card-rate">
       <span class="stat-label">Taux de conformité</span>
       <span class="stat-value" id="stat-rate">—</span>
+    </div>
+    <div class="stat-card stat-mismatch" id="card-mismatch">
+      <span class="stat-label">Nomenclature</span>
+      <span class="stat-value" id="stat-mismatch">—</span>
     </div>
   </div>
 
@@ -1207,22 +1213,22 @@
 
 <script>
 const specFormats = [
-  { tailles: ["320x100"], nom: "Megaban", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["320x100"], nom: "Megaban", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["320x50"],  nom: "Sticky",  context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["320x100"], nom: "GrandAngle (responsive)", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["320x100"], nom: "Masthead (responsive)",   context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["300x250"], nom: "Pavé", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["300x250"], nom: "Pavé", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["680x1024"],nom: "Interstitiel Non cliquable", context: "APP", formats: ["jpg","png","gif"], poidsMax: 200 },
-  { tailles: ["656x280"], nom: "Native 1 ou 2 CC / BP1",    context: "APP", formats: ["jpg","png","gif"], poidsMax: 55 },
-  { tailles: ["300x300"], nom: "BP 2/3/4", context: "APP", formats: ["jpg","png"], poidsMax: 55 },
-  { tailles: ["728x90"],  nom: "Megaban",  context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["970x250"], nom: "Masthead", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["300x600"], nom: "GrandAngle", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 55 },
-  { tailles: ["1024x580"],nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 200 },
-  { tailles: ["320x480"], nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 200 },
-  { tailles: ["300x300"], nom: "BP 2/3/4", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 55 },
+  { tailles: ["320x100"], nom: "Megaban", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["320x100"], nom: "Megaban", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["320x50"],  nom: "Sticky",  context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["320x100"], nom: "GrandAngle (responsive)", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["320x100"], nom: "Masthead (responsive)",   context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["300x250"], nom: "Pavé", context: "APP", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["300x250"], nom: "Pavé", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["680x1024"],nom: "Interstitiel Non cliquable", context: "APP", formats: ["jpg","png","gif"], poidsMax: 300 },
+  { tailles: ["656x280"], nom: "Native 1 ou 2 CC / BP1",    context: "APP", formats: ["jpg","png","gif"], poidsMax: 300 },
+  { tailles: ["300x300"], nom: "BP 2/3/4", context: "APP", formats: ["jpg","png"], poidsMax: 300 },
+  { tailles: ["728x90"],  nom: "Megaban",  context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["970x250"], nom: "Masthead", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["300x600"], nom: "GrandAngle", context: "WEB", formats: ["jpg","png","gif","html"], poidsMax: 300 },
+  { tailles: ["1024x580"],nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 300 },
+  { tailles: ["320x480"], nom: "Interstitiel Non cliquable", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 300 },
+  { tailles: ["300x300"], nom: "BP 2/3/4", context: "WEB", formats: ["jpg","png","gif"], poidsMax: 300 },
   { tailles: ["1245x700"],nom: "UNE",      context: "WEB", formats: ["jpg","png","gif"], poidsMax: 300 },
 ];
 
@@ -1465,7 +1471,8 @@ function updateStats() {
   el('stat-ok', stats.ok);
   el('stat-nok', stats.nok);
   el('stat-rate', stats.total ? `${rate} %` : '—');
-  ['card-total','card-ok','card-nok','card-rate'].forEach(id => {
+  el('stat-mismatch', stats.total ? (stats.mismatch > 0 ? stats.mismatch : '✓') : '—');
+  ['card-total','card-ok','card-nok','card-rate','card-mismatch'].forEach(id => {
     document.getElementById(id).classList.toggle('has-data', stats.total > 0);
   });
 }
